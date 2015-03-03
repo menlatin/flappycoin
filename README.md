@@ -51,7 +51,7 @@ Block 600,000+: 50 + Transaction Fees Reward
 Download Links:
 ----------------
 
-http://flappycoin.biz
+http://www.goflap.io
 
 License
 -------
