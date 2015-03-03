@@ -2,9 +2,9 @@ FlappyCoin
 ================================
 Current version: 3.2
 
-DOMAIN: http://flappycoin.biz
+DOMAIN: http://www.goflap.io
 
-EXPLORER: http://explorer.flappycoin.biz
+EXPLORER: http://explorer.goflap.io
 
 
 ![FlappyCoin](http://flappycoin.biz/flap.nsf/flapcoin_med.png)
