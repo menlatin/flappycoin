@@ -2,9 +2,9 @@ FlappyCoin
 ================================
 Current version: 3.2
 
-DOMAIN: http://flappycoin.biz
+DOMAIN: http://goflap.io
 
-EXPLORER: http://explorer.flappycoin.biz
+EXPLORER: http://explorer.goflap.io
 
 
 ![FlappyCoin](http://flappycoin.biz/flap.nsf/flapcoin_med.png)
@@ -51,7 +51,7 @@ Block 600,000+: 50 + Transaction Fees Reward
 Download Links:
 ----------------
 
-http://flappycoin.biz
+http://goflap.io
 
 License
 -------
