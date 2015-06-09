@@ -2443,13 +2443,9 @@ bool CBlock::CheckBlock(CValidationState &state, bool fCheckPOW, bool fCheckMerk
     // ppcoin: coinbase output should be empty if proof-of-stake block
     if (IsProofOfStake() && (vtx[0].vout.size() != 1 || !vtx[0].vout[0].IsEmpty()))
         return error("CheckBlock() : coinbase output not empty for proof-of-stake block");
-/*
-    // Check coinbase timestamp
-    if (GetBlockTime() > (int64_t)vtx[0].nTime + 2 * 60 * 60)
-        return state.DoS(50, error("CheckBlock() : coinbase timestamp is too early"));
-*/
+
     // Check coinstake timestamp
-    if (IsProofOfStake() && !CheckCoinStakeTimestamp(GetBlockTime(), (int64_t)vtx[1].nTime))
+    if (IsProofOfStake() && !CheckCoinStakeTimestamp(GetBlockTime(), (int64)vtx[1].nTime))
         return state.DoS(50, error("CheckBlock() : coinstake timestamp violation nTimeBlock=%"PRI64d" nTimeTx=%u", GetBlockTime(), vtx[1].nTime));
 
 
@@ -2461,10 +2457,6 @@ bool CBlock::CheckBlock(CValidationState &state, bool fCheckPOW, bool fCheckMerk
         if (!tx.CheckTransaction(state))
         {
             return error("CheckBlock() : CheckTransaction failed");
-        }
-        if (GetBlockTime() < (int64_t)tx.nTime)
-        {
-            return state.DoS(50, error("CheckBlock() : block timestamp earlier than transaction timestamp"));
         }
     }
     // Build the merkle tree already. We need it anyway later, and it makes the

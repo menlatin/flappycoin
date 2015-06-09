@@ -1705,7 +1705,7 @@ public:
         BLOCK_STAKE_MODIFIER = (1 << 2), // regenerated stake modifier
     };
 
-    uint64_t nStakeModifier; // hash modifier for proof-of-stake
+    uint64 nStakeModifier; // hash modifier for proof-of-stake
     unsigned int nStakeModifierChecksum; // checksum of index; in-memeory only
 
     // proof-of-stake specific fields
@@ -1856,7 +1856,7 @@ public:
          return (nFlags & BLOCK_STAKE_MODIFIER);
      }
 
-     void SetStakeModifier(uint64_t nModifier, bool fGeneratedStakeModifier)
+     void SetStakeModifier(uint64 nModifier, bool fGeneratedStakeModifier)
      {
          nStakeModifier = nModifier;
          if (fGeneratedStakeModifier)
@@ -2276,8 +2276,8 @@ extern CBlockTreeDB *pblocktree;
 struct CBlockTemplate
 {
     CBlock block;
-    std::vector<int64_t> vTxFees;
-    std::vector<int64_t> vTxSigOps;
+    std::vector<int64> vTxFees;
+    std::vector<int64> vTxSigOps;
 };
 
 #if defined(_M_IX86) || defined(__i386__) || defined(__i386) || defined(_M_X64) || defined(__x86_64__) || defined(_M_AMD64)
