@@ -77,7 +77,7 @@ static const int fHaveUPnP = true;
 static const int fHaveUPnP = false;
 #endif
 /** block that symbolizes the end of PoW **/
-const int CUTOFF_HEIGHT = 725000;
+const int CUTOFF_HEIGHT = 700000;
 /** Open a block file (blk?????.dat) */
 FILE* OpenBlockFile(const CDiskBlockPos &pos, bool fReadOnly = false);
 /** Open an undo file (rev?????.dat) */
