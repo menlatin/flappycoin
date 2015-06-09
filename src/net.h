@@ -21,6 +21,7 @@
 #include "addrman.h"
 #include "hash.h"
 #include "bloom.h"
+#include "miner.h"
 
 class CNode;
 class CBlockIndex;

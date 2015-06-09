@@ -7,6 +7,7 @@
 #include "db.h"
 #include "init.h"
 #include "bitcoinrpc.h"
+#include "miner.h"
 
 using namespace json_spirit;
 using namespace std;
@@ -208,8 +209,15 @@ Value getworkex(const Array& params, bool fHelp)
             CBlockIndex* pindexPrevNew = pindexBest;
             nStart = GetTime();
 
+
+            bool fProofOfStake = false;
+            if(pindexBest->nHeight + 1 >= CUTOFF_HEIGHT)
+            {
+                fProofOfStake = true;
+            }
+
             // Create new block
-            pblocktemplate = CreateNewBlockWithKey(*pMiningKey);
+            pblocktemplate = CreateNewBlockWithKey(*pMiningKey, fProofOfStake);
             if (!pblocktemplate)
                 throw JSONRPCError(RPC_OUT_OF_MEMORY, "Out of memory");
             vNewBlockTemplate.push_back(pblocktemplate);
@@ -347,8 +355,14 @@ Value getwork(const Array& params, bool fHelp)
             CBlockIndex* pindexPrevNew = pindexBest;
             nStart = GetTime();
 
+            bool fProofOfStake = false;
+            if(pindexBest->nHeight + 1 >= CUTOFF_HEIGHT)
+            {
+                fProofOfStake = true;
+            }
+
             // Create new block
-            pblocktemplate = CreateNewBlockWithKey(*pMiningKey);
+            pblocktemplate = CreateNewBlockWithKey(*pMiningKey, fProofOfStake);
             if (!pblocktemplate)
                 throw JSONRPCError(RPC_OUT_OF_MEMORY, "Out of memory");
             vNewBlockTemplate.push_back(pblocktemplate);
@@ -480,8 +494,14 @@ Value getblocktemplate(const Array& params, bool fHelp)
             delete pblocktemplate;
             pblocktemplate = NULL;
         }
+
+        bool fProofOfStake = false;
+        if(pindexBest->nHeight + 1 >= CUTOFF_HEIGHT)
+        {
+            fProofOfStake = true;
+        }
         CScript scriptDummy = CScript() << OP_TRUE;
-        pblocktemplate = CreateNewBlock(scriptDummy);
+        pblocktemplate = CreateNewBlock(scriptDummy, fProofOfStake);
         if (!pblocktemplate)
             throw JSONRPCError(RPC_OUT_OF_MEMORY, "Out of memory");
 

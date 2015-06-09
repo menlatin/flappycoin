@@ -8,10 +8,6 @@
 
 #include "key.h"
 
-
-// anonymous namespace with local implementation code (OpenSSL interaction)
-namespace {
-
 // Generate a private key from just the secret parameter
 int EC_KEY_regenerate_key(EC_KEY *eckey, BIGNUM *priv_key)
 {
@@ -188,11 +184,6 @@ public:
         pubkey.Set(&c[0], &c[nSize]);
     }
 
-    bool SetPubKey(const CPubKey &pubkey) {
-        const unsigned char* pbegin = pubkey.begin();
-        return o2i_ECPublicKey(&pkey, &pbegin, pubkey.size());
-    }
-
     bool Sign(const uint256 &hash, std::vector<unsigned char>& vchSig) {
         unsigned int nSize = ECDSA_size(pkey);
         vchSig.resize(nSize); // Make sure it is big enough
@@ -201,12 +192,6 @@ public:
         return true;
     }
 
-    bool Verify(const uint256 &hash, const std::vector<unsigned char>& vchSig) {
-        // -1 = error, 0 = bad sig, 1 = good
-        if (ECDSA_verify(0, (unsigned char*)&hash, sizeof(hash), &vchSig[0], vchSig.size(), pkey) != 1)
-            return false;
-        return true;
-    }
 
     bool SignCompact(const uint256 &hash, unsigned char *p64, int &rec) {
         bool fOk = false;
@@ -254,10 +239,21 @@ public:
         ECDSA_SIG_free(sig);
         return ret;
     }
+
+
+bool Verify(const uint256 &hash, const std::vector<unsigned char>& vchSig) {
+    // -1 = error, 0 = bad sig, 1 = good
+    if (ECDSA_verify(0, (unsigned char*)&hash, sizeof(hash), &vchSig[0], vchSig.size(), pkey) != 1)
+        return false;
+    return true;
+}
+
+bool SetPubKey(const CPubKey &pubkey) {
+    const unsigned char* pbegin = pubkey.begin();
+    return o2i_ECPublicKey(&pkey, &pbegin, pubkey.size());
+}
+
 };
-
-}; // end of anonymous namespace
-
 bool CKey::Check(const unsigned char *vch) {
     // Do not convert to OpenSSL's data structures for range-checking keys,
     // it's easy enough to do directly.
@@ -297,6 +293,26 @@ bool CKey::SetPrivKey(const CPrivKey &privkey, bool fCompressedIn) {
     key.GetSecretBytes(vch);
     fCompressed = fCompressedIn;
     fValid = true;
+    return true;
+}
+
+bool CKey::SetPubKey(const CPubKey& vchPubKey)
+{
+    CECKey key;
+    if(!key.SetPubKey(vchPubKey))
+    {
+        return false;
+    }
+    return true;
+}
+
+bool CKey::Verify(const uint256 &hash, const std::vector<unsigned char>& vchSig)
+{
+    CECKey key;
+    if(!key.Verify(hash, vchSig))
+    {
+        return false;
+    }
     return true;
 }
 

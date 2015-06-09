@@ -13,18 +13,27 @@
 
 #include <list>
 
+class CCoinsStats;
+class CValidationState;
+class CTxUndo;
+class CScriptCheck;
 class CWallet;
-class CBlock;
+class CWalletTx;
+class CBlockTreeDB;
 class CBlockIndex;
-class CKeyItem;
-class CReserveKey;
-
-class CAddress;
-class CInv;
+class CBlock;
 class CNode;
 
+struct CDiskBlockPos;
+struct CBlockTemplate;
 struct CBlockIndexWorkComparator;
 
+
+using namespace boost;
+
+typedef std::vector<unsigned char> valtype;
+
+extern int nBestHeight;
 /** The maximum allowed size for a serialized block, in bytes (network rule) */
 static const unsigned int MAX_BLOCK_SIZE = 1000000;                      // 1000KB block hard limit
 /** Obsolete: maximum size for mined blocks */
@@ -67,142 +76,28 @@ static const int fHaveUPnP = true;
 #else
 static const int fHaveUPnP = false;
 #endif
-
-
-extern CScript COINBASE_FLAGS;
-
-
-
-
-
-
-extern CCriticalSection cs_main;
-extern std::map<uint256, CBlockIndex*> mapBlockIndex;
-extern std::set<CBlockIndex*, CBlockIndexWorkComparator> setBlockIndexValid;
-extern uint256 hashGenesisBlock;
-extern CBlockIndex* pindexGenesisBlock;
-extern int nBestHeight;
-extern uint256 nBestChainWork;
-extern uint256 nBestInvalidWork;
-extern uint256 hashBestChain;
-extern CBlockIndex* pindexBest;
-extern unsigned int nTransactionsUpdated;
-extern uint64 nLastBlockTx;
-extern uint64 nLastBlockSize;
-extern const std::string strMessageMagic;
-extern double dHashesPerSec;
-extern int64 nHPSTimerStart;
-extern int64 nTimeBestReceived;
-extern CCriticalSection cs_setpwalletRegistered;
-extern std::set<CWallet*> setpwalletRegistered;
-extern unsigned char pchMessageStart[4];
-extern bool fImporting;
-extern bool fReindex;
-extern bool fBenchmark;
-extern int nScriptCheckThreads;
-extern bool fTxIndex;
-extern unsigned int nCoinCacheSize;
-
-// Settings
-extern int64 nTransactionFee;
-extern int64 nMinimumInputValue;
-
-// Minimum disk space required - used in CheckDiskSpace()
-static const uint64 nMinDiskSpace = 52428800;
-
-
-class CReserveKey;
-class CCoinsDB;
-class CBlockTreeDB;
-struct CDiskBlockPos;
-class CCoins;
-class CTxUndo;
-class CCoinsView;
-class CCoinsViewCache;
-class CScriptCheck;
-class CValidationState;
-
-struct CBlockTemplate;
-
-/** Register a wallet to receive updates from core */
-void RegisterWallet(CWallet* pwalletIn);
-/** Unregister a wallet from core */
-void UnregisterWallet(CWallet* pwalletIn);
-/** Push an updated transaction to all registered wallets */
-void SyncWithWallets(const uint256 &hash, const CTransaction& tx, const CBlock* pblock = NULL, bool fUpdate = false);
-/** Process an incoming block */
-bool ProcessBlock(CValidationState &state, CNode* pfrom, CBlock* pblock, CDiskBlockPos *dbp = NULL);
-/** Check whether enough disk space is available for an incoming block */
-bool CheckDiskSpace(uint64 nAdditionalBytes = 0);
+/** block that symbolizes the end of PoW **/
+const int CUTOFF_HEIGHT = 725000;
 /** Open a block file (blk?????.dat) */
 FILE* OpenBlockFile(const CDiskBlockPos &pos, bool fReadOnly = false);
 /** Open an undo file (rev?????.dat) */
 FILE* OpenUndoFile(const CDiskBlockPos &pos, bool fReadOnly = false);
-/** Import blocks from an external file */
-bool LoadExternalBlockFile(FILE* fileIn, CDiskBlockPos *dbp = NULL);
-/** Initialize a new block tree database + block data on disk */
-bool InitBlockIndex();
-/** Load the block tree and coins database from disk */
-bool LoadBlockIndex();
-/** Unload database information */
-void UnloadBlockIndex();
-/** Verify consistency of the block and coin databases */
-bool VerifyDB(int nCheckLevel, int nCheckDepth);
-/** Print the loaded block tree */
-void PrintBlockTree();
-/** Find a block by height in the currently-connected chain */
-CBlockIndex* FindBlockByHeight(int nHeight);
-/** Process protocol messages received from a given node */
-bool ProcessMessages(CNode* pfrom);
-/** Send queued protocol messages to be sent to a give node */
-bool SendMessages(CNode* pto, bool fSendTrickle);
-/** Run an instance of the script checking thread */
-void ThreadScriptCheck();
-/** Run the miner threads */
-void GenerateBitcoins(bool fGenerate, CWallet* pwallet);
-/** Generate a new block, without valid proof-of-work */
-CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn);
-CBlockTemplate* CreateNewBlockWithKey(CReserveKey& reservekey);
-/** Modify the extranonce in a block */
-void IncrementExtraNonce(CBlock* pblock, CBlockIndex* pindexPrev, unsigned int& nExtraNonce);
-/** Do mining precalculation */
-void FormatHashBuffers(CBlock* pblock, char* pmidstate, char* pdata, char* phash1);
-/** Check mined block */
-bool CheckWork(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey);
-/** Check whether a block hash satisfies the proof-of-work requirement specified by nBits */
-bool CheckProofOfWork(uint256 hash, unsigned int nBits);
-/** Calculate the minimum amount of work a received block needs, without knowing its direct parent */
-unsigned int ComputeMinWork(unsigned int nBase, int64 nTime);
-/** Get the number of active peers */
-int GetNumBlocksOfPeers();
-/** Check whether we are doing an initial block download (synchronizing from disk or network) */
-bool IsInitialBlockDownload();
-/** Format a string that describes several potential problems detected by the core */
-std::string GetWarnings(std::string strFor);
-/** Retrieve a transaction (from memory pool, or from disk, if possible) */
-bool GetTransaction(const uint256 &hash, CTransaction &tx, uint256 &hashBlock, bool fAllowSlow = false);
-/** Connect/disconnect blocks until pindexNew is the new tip of the active block chain */
-bool SetBestChain(CValidationState &state, CBlockIndex* pindexNew);
-/** Find the best known block, and make it the tip of the block chain */
-bool ConnectBestBlock(CValidationState &state);
-/** Create a new block index entry for a given block hash */
-CBlockIndex * InsertBlockIndex(uint256 hash);
-/** Verify a signature */
-bool VerifySignature(const CCoins& txFrom, const CTransaction& txTo, unsigned int nIn, unsigned int flags, int nHashType);
 /** Abort with a message */
 bool AbortNode(const std::string &msg);
+/** Check whether we are doing an initial block download (synchronizing from disk or network) */
+bool IsInitialBlockDownload();
+/** pointer to best block in chain index **/
+extern CBlockIndex* pindexBest;
+/** references the hash of the genesis block**/
+extern uint256 hashGenesisBlock;
+/** references the index of the genesis block **/
+extern CBlockIndex* pindexGenesisBlock;
+/** reference to the map of the block index **/
+extern std::map<uint256, CBlockIndex*> mapBlockIndex;
+/** Check whether a block hash satisfies the proof-of-work requirement specified by nBits */
+bool CheckProofOfWork(uint256 hash, unsigned int nBits);
 
 
-
-
-
-
-
-
-
-
-
-bool GetWalletFile(CWallet* pwallet, std::string &strWalletFileOut);
 
 struct CDiskBlockPos
 {
@@ -255,6 +150,90 @@ struct CDiskTxPos : public CDiskBlockPos
         CDiskBlockPos::SetNull();
         nTxOffset = 0;
     }
+};
+
+
+
+/** Abstract view on the open txout dataset. */
+class CCoinsView
+{
+public:
+    // Retrieve the CCoins (unspent transaction outputs) for a given txid
+    virtual bool GetCoins(const uint256 &txid, CCoins &coins);
+
+    // Modify the CCoins for a given txid
+    virtual bool SetCoins(const uint256 &txid, const CCoins &coins);
+
+    // Just check whether we have data for a given txid.
+    // This may (but cannot always) return true for fully spent transactions
+    virtual bool HaveCoins(const uint256 &txid);
+
+    // Retrieve the block index whose state this CCoinsView currently represents
+    virtual CBlockIndex *GetBestBlock();
+
+    // Modify the currently active block index
+    virtual bool SetBestBlock(CBlockIndex *pindex);
+
+    // Do a bulk modification (multiple SetCoins + one SetBestBlock)
+    virtual bool BatchWrite(const std::map<uint256, CCoins> &mapCoins, CBlockIndex *pindex);
+
+    // Calculate statistics about the unspent transaction output set
+    virtual bool GetStats(CCoinsStats &stats);
+
+    // As we use CCoinsViews polymorphically, have a virtual destructor
+    virtual ~CCoinsView() {}
+};
+
+/** CCoinsView backed by another CCoinsView */
+class CCoinsViewBacked : public CCoinsView
+{
+protected:
+    CCoinsView *base;
+
+public:
+    CCoinsViewBacked(CCoinsView &viewIn);
+    bool GetCoins(const uint256 &txid, CCoins &coins);
+    bool SetCoins(const uint256 &txid, const CCoins &coins);
+    bool HaveCoins(const uint256 &txid);
+    CBlockIndex *GetBestBlock();
+    bool SetBestBlock(CBlockIndex *pindex);
+    void SetBackend(CCoinsView &viewIn);
+    bool BatchWrite(const std::map<uint256, CCoins> &mapCoins, CBlockIndex *pindex);
+    bool GetStats(CCoinsStats &stats);
+};
+
+/** CCoinsView that adds a memory cache for transactions to another CCoinsView */
+class CCoinsViewCache : public CCoinsViewBacked
+{
+protected:
+    CBlockIndex *pindexTip;
+    std::map<uint256,CCoins> cacheCoins;
+
+public:
+    CCoinsViewCache(CCoinsView &baseIn, bool fDummy = false);
+
+    // Standard CCoinsView methods
+    bool GetCoins(const uint256 &txid, CCoins &coins);
+    bool SetCoins(const uint256 &txid, const CCoins &coins);
+    bool HaveCoins(const uint256 &txid);
+    CBlockIndex *GetBestBlock();
+    bool SetBestBlock(CBlockIndex *pindex);
+    bool BatchWrite(const std::map<uint256, CCoins> &mapCoins, CBlockIndex *pindex);
+
+    // Return a modifiable reference to a CCoins. Check HaveCoins first.
+    // Many methods explicitly require a CCoinsViewCache because of this method, to reduce
+    // copying.
+    CCoins &GetCoins(const uint256 &txid);
+
+    // Push the modifications applied to this cache to its base.
+    // Failure to call this method before destruction will cause the changes to be forgotten.
+    bool Flush();
+
+    // Calculate the size of the cache (in number of transactions)
+    unsigned int GetCacheSize();
+
+private:
+    std::map<uint256,CCoins>::iterator FetchCoins(const uint256 &txid);
 };
 
 
@@ -430,6 +409,17 @@ public:
         return (nValue == -1);
     }
 
+    void SetEmpty()
+    {
+        nValue = 0;
+        scriptPubKey.clear();
+    }
+
+    bool IsEmpty() const
+    {
+        return (nValue == 0 && scriptPubKey.empty());
+    }
+
     uint256 GetHash() const
     {
         return SerializeHash(*this);
@@ -479,10 +469,17 @@ public:
     static int64 nMinTxFee;
     static int64 nMinRelayTxFee;
     static const int CURRENT_VERSION=1;
+    unsigned int nTime;
     int nVersion;
     std::vector<CTxIn> vin;
     std::vector<CTxOut> vout;
     unsigned int nLockTime;
+
+
+    // Denial-of-service detection:
+    mutable int nDoS;
+    bool DoS(int nDoSIn, bool fIn) const { nDoS += nDoSIn; return fIn; }
+
 
     CTransaction()
     {
@@ -565,6 +562,12 @@ public:
     bool IsCoinBase() const
     {
         return (vin.size() == 1 && vin[0].prevout.IsNull());
+    }
+
+    bool IsCoinStake() const
+    {
+        // ppcoin: the coin stake transaction is marked with the first output empty
+        return (vin.size() > 0 && (!vin[0].prevout.IsNull()) && vout.size() >= 2 && vout[0].IsEmpty());
     }
 
     /** Check for standard transaction types
@@ -673,7 +676,7 @@ void UpdateCoins(const CTransaction& tx, CValidationState &state, CCoinsViewCach
     // Check whether all inputs of this transaction are valid (no double spends, scripts & sigs, amounts)
     // This does not modify the UTXO set. If pvChecks is not NULL, script checks are pushed onto it
     // instead of being performed inline.
-    bool CheckInputs(CValidationState &state, CCoinsViewCache &view, bool fScriptChecks = true,
+    bool CheckInputs(CValidationState &state, CCoinsViewCache &view, const CBlockIndex *pindexBlock, bool fScriptChecks = true,
                      unsigned int flags = SCRIPT_VERIFY_P2SH | SCRIPT_VERIFY_STRICTENC,
                      std::vector<CScriptCheck> *pvChecks = NULL) const;
 
@@ -685,6 +688,7 @@ void UpdateCoins(const CTransaction& tx, CValidationState &state, CCoinsViewCach
 
     // Try to accept this transaction into the memory pool
     bool AcceptToMemoryPool(CValidationState &state, bool fCheckInputs=true, bool fLimitFree = true, bool* pfMissingInputs=NULL);
+    uint64 GetCoinAge(CCoinsViewCache &inputs) const;
 
 protected:
     static const CTxOut &GetOutputFor(const CTxIn& input, CCoinsViewCache& mapInputs);
@@ -1336,6 +1340,9 @@ public:
     // network and disk
     std::vector<CTransaction> vtx;
 
+    // ppcoin: block signature - signed by one of the coin base txout[N]'s owner
+    std::vector<unsigned char> vchBlockSig;
+
     // memory only
     mutable std::vector<uint256> vMerkleTree;
 
@@ -1368,6 +1375,32 @@ public:
         uint256 thash;
         scrypt_1024_1_1_256(BEGIN(nVersion), BEGIN(thash));
         return thash;
+    }
+
+    // entropy bit for stake modifier if chosen by modifier
+    unsigned int GetStakeEntropyBit(unsigned int nHeight) const
+    {
+        // Take last bit of block hash as entropy bit
+        unsigned int nEntropyBit = static_cast<unsigned int>((GetHash().Get64()) & uint64(1));
+        if (fDebug && GetBoolArg("-printstakemodifier"))
+            printf("GetStakeEntropyBit: nHeight=%u, hashBlock=%s nEntropyBit=%u\n",nHeight, GetHash().ToString().c_str(), nEntropyBit);
+        return nEntropyBit;
+    }
+
+    // there are two types of block: proof-of-work or proof-of-stake
+    bool IsProofOfStake() const
+    {
+        return (vtx.size() > 1 && vtx[1].IsCoinStake());
+    }
+
+    bool IsProofOfWork() const
+    {
+        return !IsProofOfStake();
+    }
+
+    std::pair<COutPoint, unsigned int> GetProofOfStake() const
+    {
+        return IsProofOfStake()? std::make_pair(vtx[1].vin[0].prevout, vtx[1].nTime) : std::make_pair(COutPoint(), (unsigned int)0);
     }
 
     CBlockHeader GetBlockHeader() const
@@ -1534,6 +1567,10 @@ public:
     // Store block on disk
     // if dbp is provided, the file is known to already reside on disk
     bool AcceptBlock(CValidationState &state, CDiskBlockPos *dbp = NULL);
+
+    // some check functions for PoS
+    bool SignScryptBlock(const CKeyStore& keystore);
+    bool CheckBlockSignature() const;
 };
 
 
@@ -1659,6 +1696,24 @@ public:
     // Verification status of this block. See enum BlockStatus
     unsigned int nStatus;
 
+
+    unsigned int nFlags;  // ppcoin: block index flags
+    enum
+    {
+        BLOCK_PROOF_OF_STAKE = (1 << 0), // is proof-of-stake block
+        BLOCK_STAKE_ENTROPY  = (1 << 1), // entropy bit for stake modifier
+        BLOCK_STAKE_MODIFIER = (1 << 2), // regenerated stake modifier
+    };
+
+    uint64_t nStakeModifier; // hash modifier for proof-of-stake
+    unsigned int nStakeModifierChecksum; // checksum of index; in-memeory only
+
+    // proof-of-stake specific fields
+    COutPoint prevoutStake;
+    unsigned int nStakeTime;
+    uint256 hashProofOfStake;
+
+
     // block header
     int nVersion;
     uint256 hashMerkleRoot;
@@ -1680,6 +1735,11 @@ public:
         nTx = 0;
         nChainTx = 0;
         nStatus = 0;
+        nStakeModifier = 0;
+        nStakeModifierChecksum = 0;
+        hashProofOfStake = 0;
+        prevoutStake.SetNull();
+        nStakeTime = 0;
 
         nVersion       = 0;
         hashMerkleRoot = 0;
@@ -1688,7 +1748,7 @@ public:
         nNonce         = 0;
     }
 
-    CBlockIndex(CBlockHeader& block)
+    CBlockIndex(CBlock& block)
     {
         phashBlock = NULL;
         pprev = NULL;
@@ -1701,6 +1761,20 @@ public:
         nTx = 0;
         nChainTx = 0;
         nStatus = 0;
+        nStakeModifier = 0;
+        nStakeModifierChecksum = 0;
+        hashProofOfStake = 0;
+        if (block.IsProofOfStake())
+        {
+            SetProofOfStake();
+            prevoutStake = block.vtx[1].vin[0].prevout;
+            nStakeTime = block.vtx[1].nTime;
+        }
+        else
+        {
+            prevoutStake.SetNull();
+            nStakeTime = 0;
+        }
 
         nVersion       = block.nVersion;
         hashMerkleRoot = block.hashMerkleRoot;
@@ -1749,6 +1823,45 @@ public:
     {
         return (int64)nTime;
     }
+
+    bool IsProofOfWork() const
+     {
+         return !(nFlags & BLOCK_PROOF_OF_STAKE);
+     }
+
+     bool IsProofOfStake() const
+     {
+         return (nFlags & BLOCK_PROOF_OF_STAKE);
+     }
+
+     void SetProofOfStake()
+     {
+         nFlags |= BLOCK_PROOF_OF_STAKE;
+     }
+     unsigned int GetStakeEntropyBit() const
+     {
+         return ((nFlags & BLOCK_STAKE_ENTROPY) >> 1);
+     }
+
+     bool SetStakeEntropyBit(unsigned int nEntropyBit)
+     {
+         if (nEntropyBit > 1)
+             return false;
+         nFlags |= (nEntropyBit? BLOCK_STAKE_ENTROPY : 0);
+         return true;
+     }
+
+     bool GeneratedStakeModifier() const
+     {
+         return (nFlags & BLOCK_STAKE_MODIFIER);
+     }
+
+     void SetStakeModifier(uint64_t nModifier, bool fGeneratedStakeModifier)
+     {
+         nStakeModifier = nModifier;
+         if (fGeneratedStakeModifier)
+             nFlags |= BLOCK_STAKE_MODIFIER;
+     }
 
     CBigNum GetBlockWork() const
     {
@@ -2141,88 +2254,6 @@ struct CCoinsStats
     CCoinsStats() : nHeight(0), hashBlock(0), nTransactions(0), nTransactionOutputs(0), nSerializedSize(0), hashSerialized(0), nTotalAmount(0) {}
 };
 
-/** Abstract view on the open txout dataset. */
-class CCoinsView
-{
-public:
-    // Retrieve the CCoins (unspent transaction outputs) for a given txid
-    virtual bool GetCoins(const uint256 &txid, CCoins &coins);
-
-    // Modify the CCoins for a given txid
-    virtual bool SetCoins(const uint256 &txid, const CCoins &coins);
-
-    // Just check whether we have data for a given txid.
-    // This may (but cannot always) return true for fully spent transactions
-    virtual bool HaveCoins(const uint256 &txid);
-
-    // Retrieve the block index whose state this CCoinsView currently represents
-    virtual CBlockIndex *GetBestBlock();
-
-    // Modify the currently active block index
-    virtual bool SetBestBlock(CBlockIndex *pindex);
-
-    // Do a bulk modification (multiple SetCoins + one SetBestBlock)
-    virtual bool BatchWrite(const std::map<uint256, CCoins> &mapCoins, CBlockIndex *pindex);
-
-    // Calculate statistics about the unspent transaction output set
-    virtual bool GetStats(CCoinsStats &stats);
-
-    // As we use CCoinsViews polymorphically, have a virtual destructor
-    virtual ~CCoinsView() {}
-};
-
-/** CCoinsView backed by another CCoinsView */
-class CCoinsViewBacked : public CCoinsView
-{
-protected:
-    CCoinsView *base;
-
-public:
-    CCoinsViewBacked(CCoinsView &viewIn);
-    bool GetCoins(const uint256 &txid, CCoins &coins);
-    bool SetCoins(const uint256 &txid, const CCoins &coins);
-    bool HaveCoins(const uint256 &txid);
-    CBlockIndex *GetBestBlock();
-    bool SetBestBlock(CBlockIndex *pindex);
-    void SetBackend(CCoinsView &viewIn);
-    bool BatchWrite(const std::map<uint256, CCoins> &mapCoins, CBlockIndex *pindex);
-    bool GetStats(CCoinsStats &stats);
-};
-
-/** CCoinsView that adds a memory cache for transactions to another CCoinsView */
-class CCoinsViewCache : public CCoinsViewBacked
-{
-protected:
-    CBlockIndex *pindexTip;
-    std::map<uint256,CCoins> cacheCoins;
-
-public:
-    CCoinsViewCache(CCoinsView &baseIn, bool fDummy = false);
-
-    // Standard CCoinsView methods
-    bool GetCoins(const uint256 &txid, CCoins &coins);
-    bool SetCoins(const uint256 &txid, const CCoins &coins);
-    bool HaveCoins(const uint256 &txid);
-    CBlockIndex *GetBestBlock();
-    bool SetBestBlock(CBlockIndex *pindex);
-    bool BatchWrite(const std::map<uint256, CCoins> &mapCoins, CBlockIndex *pindex);
-
-    // Return a modifiable reference to a CCoins. Check HaveCoins first.
-    // Many methods explicitly require a CCoinsViewCache because of this method, to reduce
-    // copying.
-    CCoins &GetCoins(const uint256 &txid);
-
-    // Push the modifications applied to this cache to its base.
-    // Failure to call this method before destruction will cause the changes to be forgotten.
-    bool Flush();
-
-    // Calculate the size of the cache (in number of transactions)
-    unsigned int GetCacheSize();
-
-private:
-    std::map<uint256,CCoins>::iterator FetchCoins(const uint256 &txid);
-};
-
 /** CCoinsView that brings transactions from a memorypool into view.
     It does not check for spendings by memory pool transactions. */
 class CCoinsViewMemPool : public CCoinsViewBacked
@@ -2283,5 +2314,117 @@ public:
         READWRITE(txn);
     )
 };
+
+
+
+
+// declarations of functions
+
+
+extern const int64 nTargetTimespan;
+extern const int64 nTargetSpacing;
+extern const int64 nInterval;
+extern const int64 nStakeTargetSpacing;
+extern int nStakeMinAge;
+extern int nStakeMaxAge;
+extern unsigned int nModifierInterval;
+extern CScript COINBASE_FLAGS;
+extern CCriticalSection cs_main;
+extern std::set<CBlockIndex*, CBlockIndexWorkComparator> setBlockIndexValid;
+extern uint256 nBestChainWork;
+extern uint256 nBestInvalidWork;
+extern uint256 hashBestChain;
+extern unsigned int nTransactionsUpdated;
+extern uint64 nLastBlockTx;
+extern uint64 nLastBlockSize;
+extern const std::string strMessageMagic;
+extern double dHashesPerSec;
+extern int64 nHPSTimerStart;
+extern int64 nTimeBestReceived;
+extern CCriticalSection cs_setpwalletRegistered;
+extern std::set<CWallet*> setpwalletRegistered;
+extern unsigned char pchMessageStart[4];
+extern bool fImporting;
+extern bool fReindex;
+extern bool fBenchmark;
+extern int nScriptCheckThreads;
+extern bool fTxIndex;
+extern unsigned int nCoinCacheSize;
+
+// Settings
+extern int64 nTransactionFee;
+extern int64 nMinimumInputValue;
+
+// Minimum disk space required - used in CheckDiskSpace()
+static const uint64 nMinDiskSpace = 52428800;
+
+
+/** Register a wallet to receive updates from core */
+void RegisterWallet(CWallet* pwalletIn);
+/** Unregister a wallet from core */
+void UnregisterWallet(CWallet* pwalletIn);
+/** Push an updated transaction to all registered wallets */
+void SyncWithWallets(const uint256 &hash, const CTransaction& tx, const CBlock* pblock = NULL, bool fUpdate = false);
+/** Process an incoming block */
+bool ProcessBlock(CValidationState &state, CNode* pfrom, CBlock* pblock, CDiskBlockPos *dbp = NULL);
+/** Check whether enough disk space is available for an incoming block */
+bool CheckDiskSpace(uint64 nAdditionalBytes = 0);
+/** Import blocks from an external file */
+bool LoadExternalBlockFile(FILE* fileIn, CDiskBlockPos *dbp = NULL);
+/** Initialize a new block tree database + block data on disk */
+bool InitBlockIndex();
+/** Load the block tree and coins database from disk */
+bool LoadBlockIndex();
+/** Unload database information */
+void UnloadBlockIndex();
+/** Verify consistency of the block and coin databases */
+bool VerifyDB(int nCheckLevel, int nCheckDepth);
+/** Print the loaded block tree */
+void PrintBlockTree();
+/** Find a block by height in the currently-connected chain */
+CBlockIndex* FindBlockByHeight(int nHeight);
+/** Process protocol messages received from a given node */
+bool ProcessMessages(CNode* pfrom);
+/** Send queued protocol messages to be sent to a give node */
+bool SendMessages(CNode* pto, bool fSendTrickle);
+/** Run an instance of the script checking thread */
+void ThreadScriptCheck();
+/** Calculate the minimum amount of work a received block needs, without knowing its direct parent */
+unsigned int ComputeMinWork(unsigned int nBase, int64 nTime);
+/** Get the number of active peers */
+int GetNumBlocksOfPeers();
+/** Format a string that describes several potential problems detected by the core */
+std::string GetWarnings(std::string strFor);
+/** Retrieve a transaction (from memory pool, or from disk, if possible) */
+bool GetTransaction(const uint256 &hash, CTransaction &tx, uint256 &hashBlock, bool fAllowSlow = false);
+/** Connect/disconnect blocks until pindexNew is the new tip of the active block chain */
+bool SetBestChain(CValidationState &state, CBlockIndex* pindexNew);
+/** Find the best known block, and make it the tip of the block chain */
+bool ConnectBestBlock(CValidationState &state);
+/** Create a new block index entry for a given block hash */
+CBlockIndex * InsertBlockIndex(uint256 hash);
+/** Verify a signature */
+bool VerifySignature(const CCoins& txFrom, const CTransaction& txTo, unsigned int nIn, unsigned int flags, int nHashType);
+bool VerifySignature(const CWalletTx& txFrom, const CTransaction& txTo, unsigned int nIn, bool fValidatePayToScriptHash, int nHashType);
+
+int64 GetBlockValue(int nHeight, int64 nFees, uint256 prevHash);
+unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, bool IsPoW);
+
+bool GetWalletFile(CWallet* pwallet, std::string &strWalletFileOut);
+
+const CBlockIndex* GetLastBlockIndex(const CBlockIndex* pindex, bool fProofOfStake);
+
+int64 GetProofOfStakeReward(int64 nCoinAge, unsigned int nBits, int nHeight);
+
+
+
+
+
+
+
+
+
+
+
 
 #endif
