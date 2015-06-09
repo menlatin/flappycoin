@@ -2421,7 +2421,7 @@ bool CBlock::CheckBlock(CValidationState &state, bool fCheckPOW, bool fCheckMerk
     }
 
     // Check proof of work matches claimed amount
-    if (fCheckPOW && !CheckProofOfWork(GetPoWHash(), nBits))
+    if (fCheckPOW && IsProofOfWork() && !CheckProofOfWork(GetPoWHash(), nBits))
         return state.DoS(50, error("CheckBlock() : proof of work failed"));
 
     // Check timestamp
@@ -2527,6 +2527,11 @@ bool CBlock::AcceptBlock(CValidationState &state, CDiskBlockPos *dbp)
         }
         else
         {
+            int nHeight = pindexPrev->nHeight+1;
+            if(nHeight >= CUTOFF_HEIGHT)
+            {
+                return state.DoS(100, error("AcceptBlock() : Tried to submit PoW block after PoW phase ended"));
+            }
             // Check proof of work
             if (nBits != GetNextWorkRequired(pindexPrev, this, true))
                 return state.DoS(100, error("AcceptBlock() : incorrect proof of work"));
@@ -2637,6 +2642,11 @@ bool ProcessBlock(CValidationState &state, CNode* pfrom, CBlock* pblock, CDiskBl
         return state.Invalid(error("ProcessBlock() : already have block %d %s", mapBlockIndex[hash]->nHeight, hash.ToString().c_str()));
     if (mapOrphanBlocks.count(hash))
         return state.Invalid(error("ProcessBlock() : already have block (orphan) %s", hash.ToString().c_str()));
+
+    if(pblock->IsProofOfWork() && nBestHeight + 1 >= CUTOFF_HEIGHT)
+    {
+        return state.Invalid(error("ProcessBlock() : PoW block after PoW phase has ended"));
+    }
 
     if (pblock->IsProofOfStake() && setStakeSeen.count(pblock->GetProofOfStake()) && !mapOrphanBlocksByPrev.count(hash))
     {
