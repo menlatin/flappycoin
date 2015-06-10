@@ -1,13 +1,13 @@
 FlappyCoin 
 ================================
-Current version: 3.2
+Current version: 4.0
 
 DOMAIN: http://goflap.io
 
 EXPLORER: http://explorer.goflap.io
 
 
-![FlappyCoin](http://flappycoin.biz/flap.nsf/flapcoin_med.png)
+![FlappyCoin](http://gofalp.io/flap.nsf/flapcoin_med.png)
 
 Copyright (c) 2014 Bitcoin Developers
 
@@ -18,7 +18,7 @@ Specifications:
 ---------------
 Algorithm: Scrypt
 
-Max number of coins 70,000,000,000 FLAP in circulation after 3 years
+Max number of coins 73,000,000,000 FLAP with 1% Stake rewards indefinitely. 
 
 Block Time: 60 Seconds
 
@@ -45,7 +45,9 @@ Block 400,001 — 500,000: 12,500 Reward
 
 Block 500,001 - 600,000: 6,250 Reward
 
-Block 600,000+: 50 + Transaction Fees Reward
+Block 600,000 - 725,000: 50 + Transaction Fees Reward
+
+Block 725,000+ 10% stake rewards reducing ever 50k blocks by 1% to 1% indefinitely.
 
 
 Download Links:
