@@ -7,11 +7,11 @@ DOMAIN: http://goflap.io
 EXPLORER: http://explorer.goflap.io
 
 
-![FlappyCoin](http://gofalp.io/flap.nsf/flapcoin_med.png)
+![FlappyCoin](http://goflap.io/flap.nsf/flapcoin_med.png)
 
-Copyright (c) 2014 Bitcoin Developers
+Copyright (c) 2015 Bitcoin Developers
 
-Copyright (c) 2014 FlappyCoin Developers
+Copyright (c) 2015 FlappyCoin Developers
 
 
 Specifications:
@@ -47,13 +47,15 @@ Block 500,001 - 600,000: 6,250 Reward
 
 Block 600,000 - 725,000: 50 + Transaction Fees Reward
 
-Block 725,000+ 10% stake rewards reducing ever 50k blocks by 1% to 1% indefinitely.
+Block 725,000+: 10% stake rewards reducing ever 50k blocks by 1% to 1% indefinitely.
 
 
 Download Links:
 ----------------
 
-http://goflap.io
+*v4.0 executables coming soon*
+
+http://goflap.io/
 
 License
 -------
