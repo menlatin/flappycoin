@@ -26,6 +26,11 @@ Difficulty Retarget Time: 1 minutes (with KGW)
 
 Premine: None
 
+Min Stake Age: 3 days
+
+Max Stake Age: 21 days
+
+
 
 Rewards:
 ---------------
