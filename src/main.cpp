@@ -1149,7 +1149,7 @@ int64 GetBlockValue(int nHeight, int64 nFees, uint256 prevHash)
 // proof of stake reward when mining blovcks during PoS
 int64 GetProofOfStakeReward(int64 nCoinAge, unsigned int nBits, int nHeight)
 {
-    int64 nRewardCoinYear = MAX_MONEY * 0.1; // 10% of all coins
+    int64 nRewardCoinYear = 10 * CENT ; // 10%
     if(nHeight >= CUTOFF_HEIGHT + 50000 && nHeight < CUTOFF_HEIGHT + 100000)
         nRewardCoinYear = nRewardCoinYear * 0.9;
     if(nHeight >= CUTOFF_HEIGHT + 100000 && nHeight < CUTOFF_HEIGHT + 150000)
