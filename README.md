@@ -1,4 +1,4 @@
-FlappyCoin  - DO NO UPDATE WALLETS UNTIL FURTHER NOTICE- 6-12-15 10:27 CST
+FlappyCoin  - UPDATE WALLETS BEFORE 6/29/15
 ================================
 Current version: 4.0
 
@@ -7,7 +7,7 @@ DOMAIN: http://goflap.io
 EXPLORER: http://explorer.goflap.io
 
 
-![FlappyCoin](http://goflap.io/flap.nsf/flapcoin_med.png)
+![FlappyCoin](http://goflap.io/FlappyCoin_files/flapcoin_med.png)
 
 Copyright (c) 2015 Bitcoin Developers
 
@@ -50,15 +50,13 @@ Block 400,001 — 500,000: 12,500 Reward
 
 Block 500,001 - 600,000: 6,250 Reward
 
-Block 600,000 - 725,000: 50 + Transaction Fees Reward
+Block 600,000 - 700,000: 50 + Transaction Fees Reward
 
-Block 725,000+: 10% stake rewards reducing ever 50k blocks by 1% to 1% indefinitely.
+Block 700,000+: 10% stake rewards reducing ever 50k blocks by 1% to 1% indefinitely.
 
 
 Download Links:
 ----------------
-
-*v4.0 executables coming soon*
 
 http://goflap.io/
 
