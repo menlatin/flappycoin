@@ -620,19 +620,6 @@ int64 CTransaction::GetMinFee(unsigned int nBlockSize, bool fAllowFree,
     unsigned int nNewBlockSize = nBlockSize + nBytes;
     int64 nMinFee = (1 + (int64)nBytes / 1000) * nBaseFee;
    
-    if (fAllowFree)
-    {
-        // There is a free transaction area in blocks created by most miners,
-        // * If we are relaying we allow transactions up to DEFAULT_BLOCK_PRIORITY_SIZE - 1000
-        //   to be considered to fall into this category. We don't want to encourage sending
-        //   multiple transactions instead of one big transaction to avoid fees.
-        // * If we are creating a transaction we allow transactions up to 250 bytes
-        //   to be considered safe and assume they can likely make it into this section.
-        if (nBytes < (mode == GMF_SEND ? 250 : (DEFAULT_BLOCK_PRIORITY_SIZE - 1000)))
-           nMinFee = (1 + (int64)nBytes * 15) * nBaseFee;
-        
-    }
-
     // Flappycoin
     // To limit dust spam, add nBaseFee for each output less than DUST_SOFT_LIMIT
     BOOST_FOREACH(const CTxOut& txout, vout)
@@ -1624,7 +1611,8 @@ void CTransaction::UpdateCoins(CValidationState &state, CCoinsViewCache &inputs,
 
 bool CTransaction::HaveInputs(CCoinsViewCache &inputs) const
 {
-    if (!IsCoinBase()) {
+    if (!IsCoinBase())
+    {
         // first check whether information about the prevout hash is available
         for (unsigned int i = 0; i < vin.size(); i++) {
             const COutPoint &prevout = vin[i].prevout;

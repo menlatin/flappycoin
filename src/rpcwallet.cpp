@@ -5,6 +5,7 @@
 
 #include <boost/assign/list_of.hpp>
 
+#include "main.h"
 #include "wallet.h"
 #include "walletdb.h"
 #include "bitcoinrpc.h"
@@ -452,6 +453,17 @@ void GetAccountAddresses(string strAccount, set<CTxDestination>& setAddress)
         const string& strName = item.second;
         if (strName == strAccount)
             setAddress.insert(address);
+    }
+}
+
+void resendunsenttransactions(const Array& params, bool fHelp)
+{
+    BOOST_FOREACH(CWallet* pwallet, setpwalletRegistered)
+        pwallet->ResendWalletTransactions();
+    if (params.size() != 0 )
+    {
+        throw runtime_error(
+            "resendunsenttransactions has resent all transactions in the mempool that have not yet been packed into a block.");
     }
 }
 

@@ -218,6 +218,7 @@ static const CRPCCommand vRPCCommands[] =
     { "setaccount",             &setaccount,             true,      false,      true },
     { "getaccount",             &getaccount,             false,     false,      true },
     { "getaddressesbyaccount",  &getaddressesbyaccount,  true,      false,      true },
+    { "resendunsenttransactions",&resendunsenttransactions, true,   false,      true },
     { "sendtoaddress",          &sendtoaddress,          false,     false,      true },
     { "getreceivedbyaddress",   &getreceivedbyaddress,   false,     false,      true },
     { "getreceivedbyaccount",   &getreceivedbyaccount,   false,     false,      true },

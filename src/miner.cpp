@@ -174,7 +174,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, bool fProofOfStake
     }
     else
     {
-        pblock->nBits = GetNextWorkRequired(pindexPrev, pblock, true);
+        pblock->nBits = GetNextWorkRequired(pindexPrev, pblock, true); // true is PoW
     }
 
     // Collect memory pool transactions into the block
@@ -307,8 +307,12 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, bool fProofOfStake
             if (!tx.HaveInputs(view))
                 continue;
 
+            int64_t nMinFee = tx.GetMinFee();
             int64 nTxFees = tx.GetValueIn(view)-tx.GetValueOut();
-
+            if (nTxFees < nMinFee)
+            {
+                nTxFees = nMinFee;
+            }
             nTxSigOps += tx.GetP2SHSigOpCount(view);
             if (nBlockSigOps + nTxSigOps >= MAX_BLOCK_SIGOPS)
                 continue;
@@ -505,143 +509,155 @@ void static FlappycoinMiner(CWallet *pwallet)
     CReserveKey reservekey(pwallet);
     unsigned int nExtraNonce = 0;
 
-    bool fProofOfStake = false;
-    if((pindexBest->nHeight + 1) >= CUTOFF_HEIGHT)
-    {
-        fProofOfStake = true;
-    }
-
-    try { loop {
-        while (vNodes.empty())
-            MilliSleep(1000);
-
-        //
-        // Create new block
-        //
-        unsigned int nTransactionsUpdatedLast = nTransactionsUpdated;
-        CBlockIndex* pindexPrev = pindexBest;
-
-        auto_ptr<CBlockTemplate> pblocktemplate(CreateNewBlockWithKey(reservekey, fProofOfStake));
-        if (!pblocktemplate.get())
-            return;
-        CBlock *pblock = &pblocktemplate->block;
-        IncrementExtraNonce(pblock, pindexPrev, nExtraNonce);
-
-        if (fProofOfStake)
+    try {
+        while(true)
         {
-            // ppcoin: if proof-of-stake block found then process block
-            if (pblock->IsProofOfStake())
+            bool fProofOfStake = false;
+            if((pindexBest->nHeight + 1) >= CUTOFF_HEIGHT)
             {
-                if (!pblock->SignScryptBlock(*pwalletMain))
-                {
-                    continue;
-                }
-                printf("CPUMiner : proof-of-stake block found %s\n", pblock->GetHash().ToString().c_str());
-                SetThreadPriority(THREAD_PRIORITY_NORMAL);
-                CheckWork(pblock, *pwalletMain, reservekey);
-                SetThreadPriority(THREAD_PRIORITY_LOWEST);
+                fProofOfStake = true;
             }
-            sleep(1000); // 1 second delay
-            continue;
-        }
-
-        printf("Running FlappycoinMiner with %"PRIszu" transactions in block (%u bytes)\n", pblock->vtx.size(),
-               ::GetSerializeSize(*pblock, SER_NETWORK, PROTOCOL_VERSION));
-
-        //
-        // Pre-build hash buffers
-        //
-        char pmidstatebuf[32+16]; char* pmidstate = alignup<16>(pmidstatebuf);
-        char pdatabuf[128+16];    char* pdata     = alignup<16>(pdatabuf);
-        char phash1buf[64+16];    char* phash1    = alignup<16>(phash1buf);
-
-        FormatHashBuffers(pblock, pmidstate, pdata, phash1);
-
-        unsigned int& nBlockTime = *(unsigned int*)(pdata + 64 + 4);
-        unsigned int& nBlockBits = *(unsigned int*)(pdata + 64 + 8);
-        //unsigned int& nBlockNonce = *(unsigned int*)(pdata + 64 + 12);
 
 
-        //
-        // Search
-        //
-        int64 nStart = GetTime();
-        uint256 hashTarget = CBigNum().SetCompact(pblock->nBits).getuint256();
-        loop
-        {
-            unsigned int nHashesDone = 0;
 
-            uint256 thash;
-            char scratchpad[SCRYPT_SCRATCHPAD_SIZE];
+            while (vNodes.empty())
+            {
+                MilliSleep(1000);
+            }
+            //
+            // Create new block
+            //
+            unsigned int nTransactionsUpdatedLast = nTransactionsUpdated;
+            CBlockIndex* pindexPrev = pindexBest;
+
+            auto_ptr<CBlockTemplate> pblocktemplate(CreateNewBlockWithKey(reservekey, fProofOfStake));
+            if (!pblocktemplate.get())
+                return;
+            CBlock *pblock = &pblocktemplate->block;
+            IncrementExtraNonce(pblock, pindexPrev, nExtraNonce);
+
+            if (fProofOfStake)
+            {
+                // ppcoin: if proof-of-stake block found then process block
+                if (pblock->IsProofOfStake())
+                {
+                    if (!pblock->SignScryptBlock(*pwalletMain))
+                    {
+                        continue;
+                    }
+                    printf("CPUMiner : proof-of-stake block found %s\n", pblock->GetHash().ToString().c_str());
+                    SetThreadPriority(THREAD_PRIORITY_NORMAL);
+                    CheckWork(pblock, *pwalletMain, reservekey);
+                    SetThreadPriority(THREAD_PRIORITY_LOWEST);
+                }
+                sleep(1000); // 1 second delay
+                continue;
+            }
+
+            printf("Running FlappycoinMiner with %"PRIszu" transactions in block (%u bytes)\n", pblock->vtx.size(),
+                   ::GetSerializeSize(*pblock, SER_NETWORK, PROTOCOL_VERSION));
+
+            //
+            // Pre-build hash buffers
+            //
+            char pmidstatebuf[32+16]; char* pmidstate = alignup<16>(pmidstatebuf);
+            char pdatabuf[128+16];    char* pdata     = alignup<16>(pdatabuf);
+            char phash1buf[64+16];    char* phash1    = alignup<16>(phash1buf);
+
+            FormatHashBuffers(pblock, pmidstate, pdata, phash1);
+
+            unsigned int& nBlockTime = *(unsigned int*)(pdata + 64 + 4);
+            unsigned int& nBlockBits = *(unsigned int*)(pdata + 64 + 8);
+            //unsigned int& nBlockNonce = *(unsigned int*)(pdata + 64 + 12);
+
+
+            //
+            // Search
+            //
+            int64 nStart = GetTime();
+            uint256 hashTarget = CBigNum().SetCompact(pblock->nBits).getuint256();
+
+            unsigned int max_nonce = 0xffff0000;
+            uint256 result;
+
             loop
             {
-                scrypt_1024_1_1_256_sp(BEGIN(pblock->nVersion), BEGIN(thash), scratchpad);
+                unsigned int nHashesDone = 0;
+                uint256 thash;
 
-                if (thash <= hashTarget)
+                char scratchpad[SCRYPT_SCRATCHPAD_SIZE];
+                while(true)
                 {
-                    // Found a solution
-                    SetThreadPriority(THREAD_PRIORITY_NORMAL);
-                    CheckWork(pblock, *pwallet, reservekey);
-                    SetThreadPriority(THREAD_PRIORITY_LOWEST);
-                    break;
-                }
-                pblock->nNonce += 1;
-                nHashesDone += 1;
-                if ((pblock->nNonce & 0xFF) == 0)
-                    break;
-            }
+                    scrypt_1024_1_1_256_sp(BEGIN(pblock->nVersion), BEGIN(thash), scratchpad);
 
-            // Meter hashes/sec
-            static int64 nHashCounter;
-            if (nHPSTimerStart == 0)
-            {
-                nHPSTimerStart = GetTimeMillis();
-                nHashCounter = 0;
-            }
-            else
-                nHashCounter += nHashesDone;
-            if (GetTimeMillis() - nHPSTimerStart > 4000)
-            {
-                static CCriticalSection cs;
-                {
-                    LOCK(cs);
-                    if (GetTimeMillis() - nHPSTimerStart > 4000)
+                    if (thash <= hashTarget)
                     {
-                        dHashesPerSec = 1000.0 * nHashCounter / (GetTimeMillis() - nHPSTimerStart);
-                        nHPSTimerStart = GetTimeMillis();
-                        nHashCounter = 0;
-                        static int64 nLogTime;
-                        if (GetTime() - nLogTime > 30 * 60)
+                        // Found a solution
+                        SetThreadPriority(THREAD_PRIORITY_NORMAL);
+                        CheckWork(pblock, *pwallet, reservekey);
+                        SetThreadPriority(THREAD_PRIORITY_LOWEST);
+                        break;
+                    }
+                    pblock->nNonce += 1;
+                    nHashesDone += 1;
+                    if ((pblock->nNonce & 0xFF) == 0)
+                        break;
+                }
+                // Meter hashes/sec
+                static int64 nHashCounter;
+                if (nHPSTimerStart == 0)
+                {
+                    nHPSTimerStart = GetTimeMillis();
+                    nHashCounter = 0;
+                }
+                else
+                    nHashCounter += nHashesDone;
+                if (GetTimeMillis() - nHPSTimerStart > 4000)
+                {
+                    static CCriticalSection cs;
+                    {
+                        LOCK(cs);
+                        if (GetTimeMillis() - nHPSTimerStart > 4000)
                         {
-                            nLogTime = GetTime();
-                            printf("hashmeter %6.0f khash/s\n", dHashesPerSec/1000.0);
+                            dHashesPerSec = 1000.0 * nHashCounter / (GetTimeMillis() - nHPSTimerStart);
+                            nHPSTimerStart = GetTimeMillis();
+                            nHashCounter = 0;
+                            static int64 nLogTime;
+                            if (GetTime() - nLogTime > 30 * 60)
+                            {
+                                nLogTime = GetTime();
+                                printf("hashmeter %6.0f khash/s\n", dHashesPerSec/1000.0);
+                            }
                         }
                     }
                 }
-            }
 
-            // Check for stop or if block needs to be rebuilt
-            boost::this_thread::interruption_point();
-            if (vNodes.empty())
-                break;
-            if (pblock->nNonce >= 0xffff0000)
-                break;
-            if (nTransactionsUpdated != nTransactionsUpdatedLast && GetTime() - nStart > 60)
-                break;
-            if (pindexPrev != pindexBest)
-                break;
+                // Check for stop or if block needs to be rebuilt
+                boost::this_thread::interruption_point();
+                if (vNodes.empty())
+                    break;
+                if (pblock->nNonce >= max_nonce)
+                    break;
+                if (nTransactionsUpdated != nTransactionsUpdatedLast && GetTime() - nStart > 60)
+                    break;
+                if (pindexPrev != pindexBest)
+                    break;
 
-            // Update nTime every few seconds
-            pblock->UpdateTime(pindexPrev);
-            nBlockTime = ByteReverse(pblock->nTime);
-            if (fTestNet)
-            {
-                // Changing pblock->nTime can change work required on testnet:
-                nBlockBits = ByteReverse(pblock->nBits);
-                hashTarget = CBigNum().SetCompact(pblock->nBits).getuint256();
+                // Update nTime every few seconds
+                pblock->UpdateTime(pindexPrev);
+                nBlockTime = ByteReverse(pblock->nTime);
+
+                if (pblock->GetBlockTime() >= (int64_t)pblock->vtx[0].nTime + (2 * 60 * 60))
+                    break;  // need to update coinbase timestamp
+                if (fTestNet)
+                {
+                    // Changing pblock->nTime can change work required on testnet:
+                    nBlockBits = ByteReverse(pblock->nBits);
+                    hashTarget = CBigNum().SetCompact(pblock->nBits).getuint256();
+                }
             }
         }
-    } }
+    }
     catch (boost::thread_interrupted)
     {
         printf("FlappycoinMiner terminated\n");

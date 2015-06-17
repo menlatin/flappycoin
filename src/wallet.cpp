@@ -907,6 +907,7 @@ void CWallet::ResendWalletTransactions()
         BOOST_FOREACH(PAIRTYPE(const unsigned int, CWalletTx*)& item, mapSorted)
         {
             CWalletTx& wtx = *item.second;
+            printf("rebroadcasting tx %s \n",wtx.GetHash().ToString().c_str());
             wtx.RelayWalletTransaction();
         }
     }
