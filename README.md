@@ -1,4 +1,4 @@
-FlappyCoin  - UPDATE WALLETS BEFORE 6/29/15
+FlappyCoin  - HALT UPDATES UNTIL 4.0.0.1
 ================================
 Current version: 4.0
 
