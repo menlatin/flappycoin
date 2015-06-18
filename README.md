@@ -1,6 +1,6 @@
-FlappyCoin  - HALT UPDATES UNTIL 4.0.0.1
+FlappyCoin  - UPDATE TO 4.0.0.1 BY 6/29/15
 ================================
-Current version: 4.0
+Current version: 4.0.0.1
 
 DOMAIN: http://goflap.io
 
