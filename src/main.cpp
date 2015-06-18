@@ -624,7 +624,7 @@ int64 CTransaction::GetMinFee(unsigned int nBlockSize, bool fAllowFree,
     // To limit dust spam, add nBaseFee for each output less than DUST_SOFT_LIMIT
     BOOST_FOREACH(const CTxOut& txout, vout)
         if (txout.nValue < DUST_SOFT_LIMIT)
-            nMinFee = nBaseFee;
+            nMinFee += nBaseFee;
         
 
     // Raise the price as the block approaches full
