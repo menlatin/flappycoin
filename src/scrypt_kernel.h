@@ -11,21 +11,7 @@
 
 static std::map<int, unsigned int> mapStakeModifierCheckpoints =
     boost::assign::map_list_of
-        (     0, 0x0e00670bu )
-        (  1000, 0xd97d4595u )
-        ( 10000, 0x1cf3438cu )
-        ( 50000, 0x8b989994u )
-        ( 65000, 0xc10d7013u )
-        ( 75000, 0xfa84c87cu )
-        ( 77050, 0xf4162613u )
-        ( 77500, 0x2af7615fu )
-        ( 79000, 0x9b98a665u )
-        ( 80000, 0x7d24c746u )
-        ( 90000, 0x439f90b3u )
-        (100000, 0x5ed74657u )
-        (150000, 0x2fd6a457u )
-        (185000, 0xa28ede88u )
-        (197712, 0x4dbd9ac4u )
+        (     0, 0xcce10e5au )
         ;
 
 // MODIFIER_INTERVAL: time to elapse before new modifier is computed

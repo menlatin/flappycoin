@@ -1188,11 +1188,19 @@ void MapPort(bool)
 // The second name should resolve to a list of seed addresses.
 static const char *strMainNetDNSSeed[][2] = {
     {"dnsseed.flappycoin.biz", "dnsseed.flap.so"},
+    {"188.165.82.227","188.165.82.227"},
+    {"104.131.174.32","104.131.174.32"},
+    {"104.236.57.172","104.236.57.172"},
+    {"194.135.92.14","194.135.92.14"},
     {NULL, NULL}
 };
 
 static const char *strTestNetDNSSeed[][2] = {
     {"dnsseed.flappycoin.biz", "dnsseed.flap.so"},
+    {"188.165.82.227", "188.165.82.227"},
+    {"104.131.174.32","104.131.174.32"},
+    {"104.236.57.172","104.236.57.172"},
+    {"194.135.92.14","194.135.92.14"},
     {NULL, NULL}
 };
 
