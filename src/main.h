@@ -2439,8 +2439,6 @@ const CBlockIndex* GetLastBlockIndex(const CBlockIndex* pindex, bool fProofOfSta
 
 int64 GetProofOfStakeReward(int64 nCoinAge, unsigned int nBits, int nHeight);
 
-void static ResendWalletTransactions();
-
 
 
 

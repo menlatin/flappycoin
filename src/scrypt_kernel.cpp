@@ -53,7 +53,6 @@ static int64 GetStakeModifierSelectionInterval()
 // blocks.
 bool ComputeNextStakeModifier(const CBlockIndex* pindexPrev, uint64& nStakeModifier, bool& fGeneratedStakeModifier)
 {
-    fDebug = true;
     nStakeModifier = 0;
     fGeneratedStakeModifier = false;
     if (!pindexPrev)
