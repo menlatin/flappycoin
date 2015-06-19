@@ -573,7 +573,7 @@ public:
     int64 GetCredit(bool fUseCache=true) const
     {
         // Must wait until coinbase is safely deep enough in the chain before valuing it
-        if ((IsCoinBase()|| IsCoinStake()) && GetBlocksToMaturity() > 0)
+        if (GetBlocksToMaturity() > 0) // removed coinbase coinstake checks. they take place in get blocks to maturity so it is just a redundant call
             return 0;
 
         // GetBalance can assume transactions in mapWallet won't change

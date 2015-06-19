@@ -458,7 +458,7 @@ void GetAccountAddresses(string strAccount, set<CTxDestination>& setAddress)
     }
 }
 
-void resendunsenttransactions(const Array& params, bool fHelp)
+Value resendunsenttransactions(const Array& params, bool fHelp)
 {
     BOOST_FOREACH(CWallet* pwallet, setpwalletRegistered)
         pwallet->ResendWalletTransactions();
@@ -467,6 +467,7 @@ void resendunsenttransactions(const Array& params, bool fHelp)
         throw runtime_error(
             "resendunsenttransactions has resent all transactions in the mempool that have not yet been packed into a block.");
     }
+    return "finished";
 }
 
 Value getreceivedbyaccount(const Array& params, bool fHelp)

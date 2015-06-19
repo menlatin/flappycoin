@@ -75,7 +75,7 @@ bool ComputeNextStakeModifier(const CBlockIndex* pindexPrev, uint64& nStakeModif
         if (pindexPrev->GetBlockTime() < modifierLast->GetBlockTime() + nModifierInterval)
             return true;
     }
-    modifierLast = pindexPrev;
+    modifierLast = const_cast<CBlockIndex*>(pindexPrev);
 
     // Sort candidate blocks by timestamp
     vector<pair<int64, uint256> > vSortedByTimestamp;
